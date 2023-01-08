@@ -1,0 +1,8 @@
+{
+  "name": "server",
+  "packageManager": "yarn@3.3.1",
+  "scripts": {
+    "dev": "flask --app main --debug run",
+    "pip-install": "bash ./bin/pip_install_and_save.sh"
+  }
+}
