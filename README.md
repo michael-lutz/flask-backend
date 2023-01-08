@@ -1,37 +1,51 @@
-# chatassist
+# server
 
-## Architecture
+Flask server with our conversation endpoints, hosted on railways.
 
-Typescript Next.js frontend deployed to Vercel with serverless python functions for inference. tRPC communication between frontend and backend. Firebase auth, MongoDB state, Firebase storage file hosting.
+## local development
 
-## Development
-
-Make sure you have docker, node v16, python 3.9 installed.
-
-Populate your .env (in the root) with environment variables. Then run
+Ensure that you have `pyenv` set up so that we can all use the same python version. Then run
 
 ```sh
-# install build dependencies, yarn
-npm i yarn
-# link js dependencies
-yarn
-# start server
-bash ./bin/dev_in_container.sh
-# the following commands are run inside the docker container
-# sign in to vercel, creating a new project as you won't be deploying,
-# and add your environment variables from .env
-bash ./bin/vercel_env.sh .env
-# start the dev server
-yarn dev
+pyenv install 3.9.<whatever>
+python --version
+# make sure its 3.9
 
-# in another terminal window:
-cd packages/server
-# follow instructions in README.md
+python -m venv venv
+# Make sure to add MONGODB_URL and OPENAI_API_KEY to the environment
+# by accessing your venv/bin/activate file via nano and adding the export __=___ lines to the end of the file.
+source venv/bin/activate
+pip install -r requirements.txt
+
+yarn dev
 ```
 
-The app will then be available on localhost:3000. Whenever you edit a file, it will trigger a recompilation.
+## redirects
 
-Due to an issue with vercel's local development system, we have to run it in a container. It also takes a while to build the python functions. If its too much of a pain let me know.
+Requests are redirected to this server by vercel while undergoing local development. See `vercel.dev.json` for all redirected routes. More info can be found [here](https://vercel.com/docs/project-configuration#project-configuration/redirects)
 
-Note: we commit the yarn cache (.yarn/cache), this is not a mistake. This is to ensure same exact dependencies on local vs in prod for more consistent builds.
+## installing deps
 
+The script `./bin/pip_install_and_save.sh` installs a dependency and saves it to requirements.txt, please do this so that prod knows what to install. For brevity run
+
+```sh
+yarn pip-install <...stuff>
+```
+
+## testing and debugging
+
+You can run this to test backend functions when it's running
+
+Example:
+```sh
+curl -d '{"question":"hello can you help?","domain":"Article"}' -H 'Content-Type: application/json' http://127.0.0.1:5000/initialize_convo_python
+```
+Returns: 
+{"message": " Hi there! I'm a customer service chatbot for Playground. How can I help you today?", "id": "63b61a0f61724f40bf230164"}
+
+```sh
+curl -d '{"question":"hello can you help me sign in?","conversation_id":"63b61a0f61724f40bf230164"}' -H 'Content-Type: application/json' http://127.0.0.1:5000/generate_response_python
+```
+
+Returns:
+{"message": " Absolutely! To sign in to the Playground app, download either the iPhone or Android app and enter your login credentials. If you get an error, double check that the email is correctly formatted and that the password is correct. If you forgot your password, check our guide on resetting it.", "id": "63b61a0f61724f40bf230164"}
